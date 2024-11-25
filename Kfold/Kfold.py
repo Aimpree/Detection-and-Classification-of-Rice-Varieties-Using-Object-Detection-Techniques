@@ -2,12 +2,12 @@ from pathlib import Path
 import yaml
 import pandas as pd
 from collections import Counter
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 import datetime
 import shutil
 import os
 
-def Pre_Process(Path_Input: str, Yaml_Input: str, Path_Output: str ,ksplit: int):
+def Kfold_Process(Path_Input: str, Yaml_Input: str, Path_Output: str ,ksplit: int):
 
     pd.set_option('future.no_silent_downcasting', True)
 
@@ -21,6 +21,7 @@ def Pre_Process(Path_Input: str, Yaml_Input: str, Path_Output: str ,ksplit: int)
     cls_idx = sorted(classes.keys())
 
     indx = [label.stem for label in labels]  # uses base filename as ID (no extension)
+    # global labels_df
     labels_df = pd.DataFrame([], columns=cls_idx, index=indx)
 
     for label in labels:
@@ -38,9 +39,17 @@ def Pre_Process(Path_Input: str, Yaml_Input: str, Path_Output: str ,ksplit: int)
     labels_df = labels_df.fillna(0.0)  # replace `nan` values with `0.0`
 
     # print(labels_df)
+    # global kfolds
 
-    kf = KFold(n_splits=ksplit, shuffle=True, random_state=20) 
-    kfolds = list(kf.split(labels_df)) # Labels
+    labels_df["Marker"] = ""
+
+    labels_df["Marker"] = labels_df.apply(
+    lambda row: 0 if row[0] == 9 else (1 if row[1] == 9 else (2 if row[2] == 9 else None)),
+    axis=1
+    )
+
+    kf = StratifiedKFold(n_splits=ksplit)
+    kfolds = list(kf.split(labels_df, labels_df['Marker']))
 
     folds = [f"split_{n}" for n in range(1, ksplit + 1)]
     folds_df = pd.DataFrame(index=indx, columns=folds)
@@ -123,14 +132,14 @@ def Pre_Process(Path_Input: str, Yaml_Input: str, Path_Output: str ,ksplit: int)
 if __name__ == "__main__":
 
     
-    Input_Path = os.getenv("Input_Path")
-    Yaml_Path = os.getenv("Yaml_Path")
-    Output_Path = os.getenv("Output_Path")
-    Kfold = int(os.getenv("Kf"))
+    # Input_Path = os.getenv("Input_Path")
+    # Yaml_Path = os.getenv("Yaml_Path")
+    # Output_Path = os.getenv("Output_Path")
+    # Kfold = int(os.getenv("Kf"))
 
-    # Input_Path = 'D:/My_Data/data'
-    # Yaml_Path = 'D:/My_Data/data/data.yaml'
-    # Output_Path = 'D:/My_Data/'
-    # Kfold = 2
+    Input_Path = 'C:/Users/Aimpr/OneDrive/Desktop/Test_dataset'
+    Yaml_Path = 'C:/Users/Aimpr/OneDrive/Desktop/Test_dataset/data.yaml'
+    Output_Path = 'C:/Users/Aimpr/OneDrive/Desktop/Test_dataset'
+    Kfold = 3
 
-    Pre_Process(Input_Path, Yaml_Path, Output_Path, Kfold)
+    Kfold_Process(Input_Path, Yaml_Path, Output_Path, Kfold)

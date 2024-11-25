@@ -85,7 +85,7 @@ def Create_TXT(Input_List_Of_Data: list, Number_Of_Chunk:
     def chunk_list(lst, chunk_size):
         return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
 
-    TXT_File_Path = f'{Output_Folder}/{Output_Name}.txt'
+    TXT_File_Path = f'{Output_Folder}/{Output_Name}'
 
     chunked_data = chunk_list(Input_List_Of_Data, Number_Of_Chunk)
 
@@ -109,7 +109,7 @@ def De_Noisse(Input: str, Output_Folder: str,
 
 
 def apply_dilation(Input: str, Output_Folder: str, Save_As_Name: str,
-                   kernel_size: int = 3, iterations: int = 2):
+                   kernel_size: int = 4, iterations: int = 1):
 
     os.makedirs(Output_Folder, exist_ok=True)
 
