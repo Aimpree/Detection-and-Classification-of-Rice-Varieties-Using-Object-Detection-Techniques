@@ -131,15 +131,9 @@ def Kfold_Process(Path_Input: str, Yaml_Input: str, Path_Output: str ,ksplit: in
 
 if __name__ == "__main__":
 
-    
-    # Input_Path = os.getenv("Input_Path")
-    # Yaml_Path = os.getenv("Yaml_Path")
-    # Output_Path = os.getenv("Output_Path")
-    # Kfold = int(os.getenv("Kf"))
-
-    Input_Path = 'C:/Users/Aimpr/OneDrive/Desktop/Test_dataset'
-    Yaml_Path = 'C:/Users/Aimpr/OneDrive/Desktop/Test_dataset/data.yaml'
-    Output_Path = 'C:/Users/Aimpr/OneDrive/Desktop/Test_dataset'
-    Kfold = 3
+    Input_Path = '/home/s6410301038/_workspace/Data-Pipe-Line/data_dont_have_test'
+    Yaml_Path = '/home/s6410301038/_workspace/Data-Pipe-Line/data_dont_have_test/data.yaml'
+    Output_Path = '/home/s6410301038/_workspace/Data-Pipe-Line/kfold_file'
+    Kfold = 5
 
     Kfold_Process(Input_Path, Yaml_Path, Output_Path, Kfold)

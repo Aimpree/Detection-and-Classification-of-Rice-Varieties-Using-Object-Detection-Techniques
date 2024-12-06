@@ -1,47 +1,69 @@
 from ultralytics import YOLO
+from pathlib import Path
+import torch
 import os
+import csv
 
-def Train_Model(Yaml_List: list, ksplit: int):
+
+def Train_Model(Yaml_List: list, Output_Path: str ,ksplit: int):
+
+    Out_Path = Path(Output_Path)
+    # In_Path = Path(Input_Path)
+
+    Out_Path_Train = Path(Out_Path / "Train")
+    Out_Path_Validate = Path(Out_Path / "Validate")
+    Out_Path_Test = Path(Out_Path / "Test")
+    
+    Out_Path_Train.mkdir(parents=True, exist_ok=True)
+    Out_Path_Validate.mkdir(parents=True, exist_ok=True)
+    Out_Path_Test.mkdir(parents=True, exist_ok=True)
 
     file = open(Yaml_List, "r")
     content = file.read()
 
     X = content.split(',')
 
-    # Create a new model
-    model = YOLO('yolov8n.yaml')
-
-    # Load pretrained model to avoid training from scratch
-    model = YOLO('yolov8n.pt', task="detect")
+    Weights_Path = "./yolov8n.pt"
+    Use_Model = YOLO(Weights_Path, task="detect")
 
     results = {}
 
-    # Define your parameters
-    batch = 16
-    project = "kfold_3Class_rice"
-    epochs = 100
+    batch = 32
+    epochs = 400
+    patience = 50
+    imgsz = 640
 
-    # Assume ksplit and ds_yamls are defined
     for k in range(ksplit):
+
         dataset_yaml = X[k]
         
-        # Train the model on the k-th split
-        model.train(data=dataset_yaml, epochs=epochs, batch=batch, project=project)  # include any train arguments
+        
+        Use_Model.train(data=dataset_yaml, epochs=epochs, batch=batch, project=Out_Path_Train, 
+                        patience=patience, imgsz=imgsz, name=f"fold_{k}_train") 
 
-        # Validate after training
-        val_metrics = model.val(data=dataset_yaml, batch=batch)
+        
+        val_metrics = Use_Model.val(data=dataset_yaml, batch=batch, project=Out_Path_Validate, 
+                                    imgsz=imgsz, name=f"fold_{k}_val")
 
-        # Store both training metrics and validation results
+
+        test_metrics = Use_Model.val(split="test", data=dataset_yaml, batch=batch, 
+                                    project=Out_Path_Test, imgsz=imgsz, name=f"fold_{k}_test")
+
+
         results[k] = {
-            "train_metrics": model.metrics,  # save training metrics
-            "val_metrics": val_metrics  # save validation metrics
+            "train_metrics": Use_Model.metrics,  
+            "val_metrics": val_metrics, 
+            "test_metrics": test_metrics
         }
+
+
 
     
 if __name__ == "__main__":
 
-    Input_Path = os.getenv("Input_Path")
-    Kfold = int(os.getenv("Kf"))
+    Ymal_List = '/home/s6410301038/_workspace/Data-Pipe-Line/kfold_file/Yaml_Split.txt'
+    Out_path = '/home/s6410301038/_workspace/Data-Pipe-Line/result_all/result_12-4-2024:11:35'
+    Kfold = 5
 
-    Train_Model(Input_Path, Kfold)
+    Train_Model(Ymal_List, Out_path, Kfold)
 
