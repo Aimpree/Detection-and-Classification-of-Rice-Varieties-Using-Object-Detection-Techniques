@@ -237,8 +237,8 @@ def main(Name: str, Input: str, Class_Number: int, Number_of_Chunk: int):
 
 if __name__ == "__main__":
 
-    Name = "RD49"
-    Input_Path = 'C:/Users/Lenovo/Desktop/Rice dataset2/RD49'
+    Name = "RD61"
+    Input_Path = 'C:/Users/Lenovo/Desktop/Rice dataset2/RD61'
     Number_of_Chunk = 5
     Class_Number = 2
 
