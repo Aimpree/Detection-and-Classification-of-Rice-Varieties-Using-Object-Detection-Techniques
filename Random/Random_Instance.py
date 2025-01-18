@@ -70,7 +70,7 @@ def Create_TXT(Input_List_Of_Data: list, Output_Folder: str,
 
 
 
-def Augmentation(Input_Path: str, Output_Path: str, Rotate: int):
+def Augmentation(Input_Path: str, Output_Path: str):
 
     Input = Path(Input_Path)
     Output = Path(Output_Path)
@@ -105,6 +105,7 @@ def Augmentation(Input_Path: str, Output_Path: str, Rotate: int):
 
     current_image = None
     processed_image = None
+    random.seed(5)
 
     for idx, row in data.iterrows():
         image_path = row['IMAGES']
@@ -116,7 +117,7 @@ def Augmentation(Input_Path: str, Output_Path: str, Rotate: int):
             if processed_image is not None:
                 # Generate the save name based on original image name
                 base_name = current_image['name'].split('.')[0]  # Ensure it only uses the base name, no extra suffix
-                save_name = f'a_{Rotate}_{base_name}.jpg'  # Format: a90_RD41_0001.jpg
+                save_name = f'{base_name}.jpg'  # Format: a90_RD41_0001.jpg
 
                 Output_Path = os.path.join(Output, save_name)
                 processed_image.save(Output_Path)
@@ -153,7 +154,8 @@ def Augmentation(Input_Path: str, Output_Path: str, Rotate: int):
         circular_cropped.paste(sub_image, (0, 0), mask)
 
         
-        rotated_sub_image = circular_cropped.rotate(Rotate, expand=1)
+        a = random.randrange(1, 359)
+        rotated_sub_image = circular_cropped.rotate(a, expand=1)
 
         rotated_box = (
             max(0, center_x - rotated_sub_image.size[0] // 2),
@@ -166,45 +168,40 @@ def Augmentation(Input_Path: str, Output_Path: str, Rotate: int):
     # Save the last processed image
     if processed_image is not None:
         base_name = current_image['name'].split('.')[0]  # Ensure no extra numbers or suffix
-        save_name = f'a_{Rotate}_{base_name}.jpg'
+        save_name = f'{base_name}.jpg'
 
         Output_Path = os.path.join(Output, save_name)
         processed_image.save(Output_Path)
         # print(f"Saved: {save_name}")
 
 
-def Process(Input_Path: str, Output_Path: str, Class: int, Degrees: list):
+def Process(Input_Path: str, Class: int, Randoms: list):
 
     Input = Path(Input_Path)
-    Output = Path(Output_Path)
-    Output_Folder = Output 
+    Output_Folder = Input / 'Augmentation File'
 
-    for Degree in Degrees:
+    for Random in range(Randoms):
 
-        os.makedirs(Path(f'{Output_Folder}/{Degree}/images'), exist_ok=True)
-        os.makedirs(Path(f'{Output_Folder}/{Degree}/labels'), exist_ok=True)
+        os.makedirs(Path(f'{Output_Folder}/{Random}/images'), exist_ok=True)
+        os.makedirs(Path(f'{Output_Folder}/{Random}/labels'), exist_ok=True)
 
         Augmentation(
             Input_Path=str(Input),
-            Output_Path=Path(f'{Output_Folder}/{Degree}/images'),
-            Rotate=Degree
+            Output_Path=Path(f'{Output_Folder}/{Random}/images')
         )
 
-        Images = sorted(Output_Folder.glob(f"{Degree}/images/*.jpg"))
+        Images = sorted(Output_Folder.glob(f"{Random}/images/*.jpg"))
 
         for image in Images:
             Data = Find_Regtangle_Area(image)
             anotation = Calculate_Data(Data, Class)
-            Create_TXT(anotation, Path(f'{Output_Folder}/{Degree}/labels'), f'{image.name[0:-4]}.txt')
+            Create_TXT(anotation, Path(f'{Output_Folder}/{Random}/labels'), f'{image.name[0:-4]}.txt')
 
 
 if __name__ == "__main__":
 
-    type = 'val'
-    Input_Path = f'D:/Workflow_project/Prepair_Train/HSV_Source_File2/JM105/{type}'
-    Output_Path = f'D:/Workflow_project/Prepair_Train/HSV_Source_File2/P3/{type}'
-    Degree1 = [90, 180, 270]
-    Degree2 = [45, 90, 135, 180, 225, 270, 315]
-    Degree3 = [22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180, 202.5, 225, 247.5, 270, 292.5, 315, 337.5]
 
-    Process(Input_Path, Output_Path, 0, Degree3) 
+    Input_Path = r'D:\Workflow_project\PREPROCESS FILE JM105'
+    Randoms = 1
+
+    Process(Input_Path, 0, Randoms)

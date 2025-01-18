@@ -33,16 +33,16 @@ def Holdout_Process(Path_Input: str, Yaml_Input: str, Path_Output: str, Seed: in
 
     labels_df = labels_df.fillna(0.0)
     labels_df["Marker"] = labels_df.apply(
-        lambda row: 0 if row[0] == 9 else (1 if row[1] == 9 else (2 if row[2] == 9 else None)), axis=1
+        lambda row: 0 if row[0] >= 1 else (1 if row[1] >= 1 else (2 if row[2] >= 1 else None)), axis=1
     )
 
     feature = labels_df.drop("Marker", axis=1)
     X_train_v, X_test, y_train_v, y_test = train_test_split(
-        feature, labels_df["Marker"], test_size=0.2, stratify=labels_df["Marker"], random_state=Seed
-    )
+        feature, labels_df["Marker"], test_size=0.2, stratify=labels_df["Marker"], random_state=Seed) #stratify=labels_df["Marker"]) # #
+    
     X_train, X_val, y_train, y_val = train_test_split(
-        X_train_v, y_train_v, test_size=0.25, stratify=y_train_v, random_state=Seed
-    )
+        X_train_v, y_train_v, test_size=0.25, stratify=y_train_v, random_state=Seed) # random_state=Seed, shuffle=True) #
+    
 
     save_path = Path(Out_path / f"{datetime.date.today().isoformat()}-Holdout")
     save_path.mkdir(parents=True, exist_ok=True)
@@ -77,3 +77,12 @@ def Holdout_Process(Path_Input: str, Yaml_Input: str, Path_Output: str, Seed: in
             },
             ds_y,
         )
+
+if __name__ == "__main__":
+
+    Input_Path = 'D:/Workflow_project/PREPROCESS FILE JM105/Augmentation File/JM105_HSV'
+    Yaml_Path = 'D:/Workflow_project/data.yaml'
+    Output_Path = 'D:/Workflow_project/Prepair_Train/HSV_Source_File2'
+    seed = 5
+
+    Holdout_Process(Input_Path, Yaml_Path, Output_Path, seed)
