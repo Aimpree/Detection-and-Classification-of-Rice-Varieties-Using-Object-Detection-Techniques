@@ -284,9 +284,9 @@ def Preprocess(Input_Path, Class_Number, Name):
 
 if __name__ == "__main__":
 
-    Class_type = 'RD61'
-    Input = f'C:/Users/Lenovo/Desktop/Rice dataset2/{Class_type}'
+    Class_type = 'Name'
+    Input = 'Input_Path'
     Name = Class_type
-    Class = 2
+    Class = "Number_Of_Class"
 
     Preprocess(Input, Class, Name)
