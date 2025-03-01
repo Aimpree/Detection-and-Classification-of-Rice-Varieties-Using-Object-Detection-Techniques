@@ -7,7 +7,6 @@ import os
 import random
 
 def Alpha_Add(Sub_Images):
-    pass
     
     Output = []
 
