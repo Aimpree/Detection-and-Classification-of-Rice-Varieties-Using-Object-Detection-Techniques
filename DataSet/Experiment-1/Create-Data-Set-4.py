@@ -70,21 +70,13 @@ def Calcultae_Data(Input_List_Of_Data: list, Image_W: int = 5100, Image_H: int =
 
 def Random_Position(Input_List_Of_Data: list):
 
-    
-    
     Data1 = pd.DataFrame(Input_List_Of_Data, columns=('Class', 'X', 'Y', 'W', 'H'))
     
     Data2 = pd.DataFrame(columns=('Class', 'X', 'Y', 'W', 'H'))
 
-    random.seed(14)
-
     X = [random.random() for _ in range(len(Data1))]
-
-    random.seed(12)
-
     Y = [random.random() for _ in range(len(Data1))]
     
-
     Data2['Class'] = Data1['Class']
 
     Data2['X'] = X
