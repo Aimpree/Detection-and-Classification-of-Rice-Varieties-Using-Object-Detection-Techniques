@@ -28,62 +28,61 @@ def Create_Images(Input_DataFrame_1, Input_DataFrame_2, Output_Path):
     width, height = 5100, 3750
     
 
-    for Data1, Data2 in  zip(Input_DataFrame_1, Input_DataFrame_2):
+    for range_list in range(len(Input_DataFrame_1)):
 
-        Concat_Data.append(pd.concat((Data1, Data2), axis=0))
+        Input_DataFrame_2[range_list].reverse()
+
+        for Data1, Data2 in  zip(Input_DataFrame_1[range_list], Input_DataFrame_2[range_list]):
+
+            Concat_Data.append(pd.concat((Data1, Data2), axis=0))
     
-    for count, Data in enumerate(Concat_Data):
-        
-        Save_Lables = Data.drop(columns=['Images', 'Position'])
-        Save_Lables.to_csv(Output_Path / 'labels' / f'Imbalance_Mix_{str(count).zfill(4)}.txt', index=False, header=False, sep=' ')
-        black_image = Image.new("RGB", (width, height), color=(0, 0, 0))
-        
-        for _, row in Data.iterrows():
-
-            image = row['Images']
-            position = row['Position']
-
-            images_add_alpha = Alpha_Add(image)
-
+        for count, Data in enumerate(Concat_Data):
             
-            black_image.paste(images_add_alpha, position, mask=images_add_alpha)
+            Save_Lables = Data.drop(columns=['Images', 'Position'])
+            Save_Lables.to_csv(Output_Path / 'labels' / f'Imbalance_Mix_{str(count).zfill(4)}.txt', index=False, header=False, sep=' ')
+            black_image = Image.new("RGB", (width, height), color=(0, 0, 0))
+            
+            for _, row in Data.iterrows():
 
-        black_image.save(Output_Path / 'images' / f'Imbalance_Mix_{str(count).zfill(4)}.png')
+                image = row['Images']
+                position = row['Position']
 
+                images_add_alpha = Alpha_Add(image)
+                black_image.paste(images_add_alpha, position, mask=images_add_alpha)
 
+            black_image.save(Output_Path / 'images' / f'Imbalance_Mix_{str(count).zfill(4)}.png')
+            
 
+##ใส่ ทั้งสองอันเข้ามา ทั้งสอง DataFrame
 
-def Mix_Instances_With_Differance_Ration(Input_DataFrame, Ration = [10, 20, 30, 40, 50, 60, 70, 80, 90, None]):
+def Mix_Instances_With_Differance_Ration(Input_DataFrame, max_instances, Ration=[10, 20, 30, 40, 50, 60, 70, 80, 90]):
 
     max_row = len(Input_DataFrame)
-    Result = []
-    max_instances = 36 
-    
-    index_after_split = [0]  
+    Result_Final = []  # Stores the final structured output
+    index_after_split = [0]
 
-    while index_after_split[-1] < max_row: 
-        temp_indices = [index_after_split[-1]] 
+    while index_after_split[-1] < max_row:
+        temp_indices = [index_after_split[-1]]
+        result_9 = []  # Temporary list to hold values for a single round
 
         for i in Ration:
-            if i is not None:
-                result = (max_instances * i) / 100
-                next_index = temp_indices[-1] + math.ceil(result)
-                
-                if next_index >= max_row:
-                    next_index = max_row  
-                    temp_indices.append(next_index)
-                    break  
-                
+            # if i is not None:
+            next_index = temp_indices[-1] + int((max_instances * i) / 100)
+            if next_index >= max_row:
+                next_index = max_row
                 temp_indices.append(next_index)
+                break  
 
+            temp_indices.append(next_index)
 
         for start_index, stop_index in zip(temp_indices[:-1], temp_indices[1:]):
-            
-            Result.append(Input_DataFrame.iloc[start_index:stop_index])  
+            result_9.append(Input_DataFrame.iloc[start_index:stop_index])  # Append each slice to the temp list
         
-        index_after_split = [stop_index]
+        Result_Final.append(result_9)  # Append each round's result as a separate list
+        index_after_split = [temp_indices[-1]]
 
-    return Result
+    return Result_Final
+
 
 def Random_Position(Input_DataFrame):
 
@@ -181,29 +180,6 @@ def Stored_Small_Images(Input_DataFrame):
     return Images_and_Labels
 
 
-def Split_Group(Input_DataFrame):
-
-    max_instance = len(Input_DataFrame)  # Use len() for row count
-    num_splits = 9
-
-    if max_instance < num_splits:  # Ensure at least 9 rows exist
-        print("Not enough data to split into 9 parts.")
-        return
-
-    step_instance = max_instance // num_splits  # Determine step size
-    split_range = [i for i in range(0, max_instance + step_instance, step_instance)]  # Start indices
-
-    After_Split_DataFrame = []
-
-    for i in range(len(split_range) - 1):
-
-        start_idx = split_range[i]
-        end_idx = split_range[i + 1]  # End index exclusive
-        After_Split_DataFrame.append(Input_DataFrame.loc[start_idx:end_idx -1])
-
-    return After_Split_DataFrame
-
-
 def Extract_Labels(Input_DataFrame, Instance = 'defult'):
 
     Info = Input_DataFrame
@@ -244,8 +220,8 @@ def Extract_Labels(Input_DataFrame, Instance = 'defult'):
                         all_instance_info.append(instance_info)
 
                 while len(all_instance_info) > 3:
-                # for _ in range(6):
-                    
+                
+                    random.seed(Random_Seed)
                     index_to_remove = random.randrange(0, len(all_instance_info))
                     all_instance_info.pop(index_to_remove)
 
@@ -257,12 +233,44 @@ def Extract_Labels(Input_DataFrame, Instance = 'defult'):
         label = row['Lables_Path']
 
         Stored.extend(read_Instance(label, image))
+        global Random_Seed
+        Random_Seed += 1
 
     return Stored
 
 
+def Check_Labels(Input_Path, Output_Path):
 
-def Main(Input_Path, Output_Path):
+    Input = Path(Input_Path)
+    Output = Path(Output_Path)
+    Output.mkdir(parents=True, exist_ok=True)  
+
+    Labels = sorted(Input.rglob('labels/*.txt'))
+    Score = {'Class JM105': 0, 'Class Other': 0}  
+
+    for label_path in Labels:
+        with open(label_path, 'r') as file:
+            lines = file.readlines()
+
+            for line in lines:
+                split_info = line.split()  
+                class_name = split_info[0]
+
+                if class_name == '0':
+                    Score['Class JM105'] += 1
+                else:
+                    Score['Class Other'] += 1
+    
+   
+    output_label_path = Output / 'Class_Count.txt'
+
+    with open(output_label_path, 'w') as file:
+        file.write(f"Class JM105: {Score['Class JM105']}\n")
+        file.write(f"Class Other: {Score['Class Other']}\n")
+
+
+
+def Create_Data_Set(Input_Path, Output_Path):
 
     Input = Path(Input_Path)
     Output = Path(Output_Path)
@@ -316,12 +324,16 @@ def Main(Input_Path, Output_Path):
 
     Focus_Class_images = Stored_Small_Images(Focus_Class)
     Other_Class_images = Stored_Small_Images(Other_Class)
-
-    Focus = Mix_Instances_With_Differance_Ration(Focus_Class_images)
-    Other = Mix_Instances_With_Differance_Ration(Other_Class_images, Ration = [90, 80, 70, 60, 50, 40, 30, 20, 10, None])
+    
+    Focus = Mix_Instances_With_Differance_Ration(Focus_Class_images, max_instances= 20)
+    Other = Mix_Instances_With_Differance_Ration(Other_Class_images, max_instances= 20)
 
     Create_Images(Focus, Other, Output_Folder)
-   
+    Check_Labels(Output_Folder, Output)
 
 
-Main(r'train', r'C:\Users\Aimpr\OneDrive\Desktop\Workflow\final')
+if __name__ == "__main__":
+
+    global Random_Seed
+    Random_Seed = 0
+    Create_Data_Set(r'D:\Workflow_project\test', r'D:\Workflow_project\runs')
