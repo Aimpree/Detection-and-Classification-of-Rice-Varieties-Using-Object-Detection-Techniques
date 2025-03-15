@@ -58,12 +58,12 @@ def Create_Images(Input_DataFrame_1, Input_DataFrame_2, Output_Path):
 def Mix_Instances_With_Differance_Ration(Input_DataFrame, max_instances, Ration=[10, 20, 30, 40, 50, 60, 70, 80, 90]):
 
     max_row = len(Input_DataFrame)
-    Result_Final = []  # Stores the final structured output
+    Result_Final = []  
     index_after_split = [0]
 
     while index_after_split[-1] < max_row:
         temp_indices = [index_after_split[-1]]
-        result_9 = []  # Temporary list to hold values for a single round
+        result_9 = []  
 
         for i in Ration:
             # if i is not None:
@@ -76,9 +76,9 @@ def Mix_Instances_With_Differance_Ration(Input_DataFrame, max_instances, Ration=
             temp_indices.append(next_index)
 
         for start_index, stop_index in zip(temp_indices[:-1], temp_indices[1:]):
-            result_9.append(Input_DataFrame.iloc[start_index:stop_index])  # Append each slice to the temp list
+            result_9.append(Input_DataFrame.iloc[start_index:stop_index])  
         
-        Result_Final.append(result_9)  # Append each round's result as a separate list
+        Result_Final.append(result_9) 
         index_after_split = [temp_indices[-1]]
 
     return Result_Final
@@ -219,7 +219,7 @@ def Extract_Labels(Input_DataFrame, Instance = 'defult'):
                         instance_info = 1, float(split_info[1]), float(split_info[2]), float(split_info[3]), float(split_info[4]), Images_Path
                         all_instance_info.append(instance_info)
 
-                while len(all_instance_info) > 3:
+                while len(all_instance_info) > 5:
                 
                     random.seed(Random_Seed)
                     index_to_remove = random.randrange(0, len(all_instance_info))
@@ -269,8 +269,20 @@ def Check_Labels(Input_Path, Output_Path):
         file.write(f"Class Other: {Score['Class Other']}\n")
 
 
+def Drop_to_Equal(Main_DataFrame, Sup_DataFrame):
+    
+    count_main_data = len(Main_DataFrame)
+    count_sup_data = len(Sup_DataFrame)
 
-def Create_Data_Set(Input_Path, Output_Path):
+    if count_sup_data > (count_main_data / 2):
+
+        Equal_Data = Sup_DataFrame[Sup_DataFrame.index < (count_main_data / 2)]
+        
+    return Equal_Data
+
+
+
+def Create_Data_Set(Input_Path, Output_Path, Instance_per_image):
 
     Input = Path(Input_Path)
     Output = Path(Output_Path)
@@ -285,8 +297,8 @@ def Create_Data_Set(Input_Path, Output_Path):
     images_Class_JM105 = sorted(Input.rglob("*images/*JM105*.jpg"))
 
     ###
-    labels_Class_other1 = sorted(Input.rglob("*labels/*RD41*.txt"))
-    images_Class_other1 = sorted(Input.rglob("*images/*RD41*.jpg"))
+    # labels_Class_other1 = sorted(Input.rglob("*labels/*RD41*.txt"))
+    # images_Class_other1 = sorted(Input.rglob("*images/*RD41*.jpg"))
 
     labels_Class_other2 = sorted(Input.rglob("*labels/*RD49*.txt"))
     images_Class_other2 = sorted(Input.rglob("*images/*RD49*.jpg"))
@@ -298,8 +310,8 @@ def Create_Data_Set(Input_Path, Output_Path):
     Data_JM105 = ({"Images_Path": images_Class_JM105,
                     "Lables_Path": labels_Class_JM105})
     
-    Data_RD41 = ({"Images_Path": images_Class_other1,
-                    "Lables_Path": labels_Class_other1})
+    # Data_RD41 = ({"Images_Path": images_Class_other1,
+    #                 "Lables_Path": labels_Class_other1})
     
     Data_RD49 = ({"Images_Path": images_Class_other2,
                     "Lables_Path": labels_Class_other2})
@@ -307,14 +319,18 @@ def Create_Data_Set(Input_Path, Output_Path):
     Data_RD61 = ({"Images_Path": images_Class_other3,
                     "Lables_Path": labels_Class_other3})
 
+    
     ###
-    Other_Class1 = pd.DataFrame(Extract_Labels(Data_RD41, 'type 1'), columns=('Class', 'X', 'Y', 'W', 'H', 'Images_Path'))
-    Other_Class2 = pd.DataFrame(Extract_Labels(Data_RD49, 'type 1'), columns=('Class', 'X', 'Y', 'W', 'H', 'Images_Path'))
-    Other_Class3 = pd.DataFrame(Extract_Labels(Data_RD61, 'type 1'), columns=('Class', 'X', 'Y', 'W', 'H', 'Images_Path'))
+    Focus_Class = pd.DataFrame(Extract_Labels(Data_JM105, 'defult'), columns=('Class', 'X', 'Y', 'W', 'H', 'Images_Path'))
+    Non_Drop_Other_Class1 = pd.DataFrame(Extract_Labels(Data_RD49, 'type 1'), columns=('Class', 'X', 'Y', 'W', 'H', 'Images_Path'))
+    Non_Drop_Other_Class2 = pd.DataFrame(Extract_Labels(Data_RD61, 'type 1'), columns=('Class', 'X', 'Y', 'W', 'H', 'Images_Path'))
+
+    Other_Class1 = Drop_to_Equal(Focus_Class, Non_Drop_Other_Class1)
+    Other_Class2 = Drop_to_Equal(Focus_Class, Non_Drop_Other_Class2)
+
     ###
 
-    Focus_Class = pd.DataFrame(Extract_Labels(Data_JM105, 'defult'), columns=('Class', 'X', 'Y', 'W', 'H', 'Images_Path'))
-    Other_Class = pd.concat((Other_Class1, Other_Class2, Other_Class3), axis=0)
+    Other_Class = pd.concat((Other_Class1, Other_Class2), axis=0)
     Other_Class = Other_Class.sample(frac = 1, random_state=5, ignore_index=True)
 
     print("JM105")
@@ -325,8 +341,8 @@ def Create_Data_Set(Input_Path, Output_Path):
     Focus_Class_images = Stored_Small_Images(Focus_Class)
     Other_Class_images = Stored_Small_Images(Other_Class)
     
-    Focus = Mix_Instances_With_Differance_Ration(Focus_Class_images, max_instances= 20)
-    Other = Mix_Instances_With_Differance_Ration(Other_Class_images, max_instances= 20)
+    Focus = Mix_Instances_With_Differance_Ration(Focus_Class_images, max_instances= Instance_per_image)
+    Other = Mix_Instances_With_Differance_Ration(Other_Class_images, max_instances= Instance_per_image)
 
     Create_Images(Focus, Other, Output_Folder)
     Check_Labels(Output_Folder, Output)
@@ -336,4 +352,5 @@ if __name__ == "__main__":
 
     global Random_Seed
     Random_Seed = 0
-    Create_Data_Set(r'D:\Workflow_project\test', r'D:\Workflow_project\runs')
+    Instance = 20
+    Create_Data_Set(r'C:\Users\Aimpr\OneDrive\Desktop\Workflow\train', r'C:\Users\Aimpr\OneDrive\Desktop\Workflow\tt', Instance)
