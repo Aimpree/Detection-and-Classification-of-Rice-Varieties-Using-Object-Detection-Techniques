@@ -8,12 +8,21 @@
 
 ## Rice Origianl Data-Set
 ### Jasmine rice 105
-<img src="https://github.com/user-attachments/assets/a0d1ea3e-2267-480a-b64a-3e89f54123a7" alt="Jasmine Rice 105" style="width:50%; height:auto;">
+<img src="" alt="Jasmine Rice 105" style="width:50%; height:auto;">
 
 ### JRD rice 49
-<img src="https://github.com/user-attachments/assets/66657f50-bf35-4775-9813-5c529641205a" alt="Jasmine Rice 105" style="width:50%; height:auto;">
-
+<img src="" alt="Jasmine Rice 105" style="width:50%; height:auto;">
+![RD49_0031](https://github.com/user-attachments/assets/228f5c3b-5896-41c1-8680-b04d55009be1)
 
 ### RD rice 61
-<img src="https://github.com/user-attachments/assets/4b943114-8dda-4958-b884-108366dac4ba" alt="Jasmine Rice 105" style="width:50%; height:auto;">
+<img src="" alt="Jasmine Rice 105" style="width:50%; height:auto;">
+![RD61_0023](https://github.com/user-attachments/assets/8ffbfb47-b4fa-488b-8c28-f8394f8e0e1c)
 
+## Preprocess
+- 1.Loads input rice images
+- 2.Applies a series of preprocessing steps
+- 3.Extracts bounding boxes for rice grains
+- 4.Outputs clean image-mask pairs + YOLO labels
+
+### Images after thought Preprocess
+#### Jasmine rice 105
