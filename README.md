@@ -1,24 +1,19 @@
-# 🌤️ WeatherApp
+# Reserch about Detection and Classification of Rice Varieties Using Object Detection Techniques
 
-A simple Python CLI application that fetches and displays current weather information using the OpenWeatherMap API.
+## Rice Varieties
 
-## 🚀 Features
+- Jasmine rice 105
+- RD rice 49
+- RD rice 61
 
-- Get current weather data for any city
-- Supports temperature in Celsius or Fahrenheit
-- Easy-to-use command line interface
-- Lightweight and fast
+## Rice Origianl Data-Set
+### Jasmine rice 105
+<img src="https://github.com/user-attachments/assets/a0d1ea3e-2267-480a-b64a-3e89f54123a7" alt="Jasmine Rice 105" style="width:50%; height:auto;">
 
-## 🛠️ Technologies Used
+### JRD rice 49
+<img src="https://github.com/user-attachments/assets/66657f50-bf35-4775-9813-5c529641205a" alt="Jasmine Rice 105" style="width:50%; height:auto;">
 
-- Python 3.8+
-- `requests` library
-- OpenWeatherMap API
 
-## 📦 Installation
+### RD rice 61
+<img src="https://github.com/user-attachments/assets/4b943114-8dda-4958-b884-108366dac4ba" alt="Jasmine Rice 105" style="width:50%; height:auto;">
 
-1. Clone the repository:
-
-```bash
-git clone https://github.com/your-username/WeatherApp.git
-cd WeatherApp
